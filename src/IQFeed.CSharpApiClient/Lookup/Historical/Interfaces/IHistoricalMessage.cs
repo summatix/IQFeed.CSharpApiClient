@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace IQFeed.CSharpApiClient.Lookup.Historical.Messages 
+namespace IQFeed.CSharpApiClient.Lookup.Historical.Interfaces 
 {
     public interface IHistoricalMessage 
     {

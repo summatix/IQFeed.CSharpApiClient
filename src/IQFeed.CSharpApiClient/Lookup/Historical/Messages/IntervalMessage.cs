@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using IQFeed.CSharpApiClient.Extensions;
+using IQFeed.CSharpApiClient.Lookup.Historical.Interfaces;
 
 namespace IQFeed.CSharpApiClient.Lookup.Historical.Messages
 {
@@ -61,6 +63,13 @@ namespace IQFeed.CSharpApiClient.Lookup.Historical.Messages
                 int.Parse(values[7], CultureInfo.InvariantCulture),
                 int.Parse(values[8], CultureInfo.InvariantCulture),
                 requestId);
+        }
+
+        public static IEnumerable<IntervalMessage> ParseFromFile(string path, bool withRequestId = false)
+        {
+            return withRequestId == false
+                ? HistoricalMessage.ParseFromFile(path, Parse)
+                : HistoricalMessage.ParseFromFile(path, ParseWithRequestId);
         }
 
         public override bool Equals(object obj)

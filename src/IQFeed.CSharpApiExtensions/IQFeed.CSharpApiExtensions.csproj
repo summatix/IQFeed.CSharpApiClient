@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netcoreapp2.0;net461;net45</TargetFrameworks>
+	
+	<!-- Required in both test/product projects. This is a temporary workaround for https://github.com/Microsoft/vstest/issues/800 -->
+	<DebugType>Full</DebugType>
+	<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+	<Authors>Mathieu Paquette</Authors>
+	<Company>Mathieu Paquette</Company>
+	<Copyright>Copyright © 2019 Mathieu Paquette</Copyright>
+	<PackageLicenseUrl>https://raw.githubusercontent.com/mathpaquette/IQFeed.CSharpApiClient/master/LICENSE</PackageLicenseUrl>
+	<PackageProjectUrl>https://github.com/mathpaquette/IQFeed.CSharpApiClient</PackageProjectUrl>
+	<RepositoryUrl>https://github.com/mathpaquette/IQFeed.CSharpApiClient</RepositoryUrl>
+	<PackageTags>DTN IQFeed Socket API (Extensions)</PackageTags>
+	<AssemblyVersion>1.0.0.0</AssemblyVersion>
+	<FileVersion>1.0.0.0</FileVersion>
+	<Version>1.0.0</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\IQFeed.CSharpApiClient\IQFeed.CSharpApiClient.csproj" />
+  </ItemGroup>
+
+</Project>
