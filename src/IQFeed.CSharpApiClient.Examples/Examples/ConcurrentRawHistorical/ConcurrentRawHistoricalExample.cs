@@ -29,7 +29,7 @@ namespace IQFeed.CSharpApiClient.Examples.Examples.ConcurrentRawHistorical
 
         private readonly string _basePath;
 
-        public ConcurrentRawHistoricalExample() : base(LookupClientFactory.CreateNew(NumberOfConcurrentClients), NumberOfConcurrentClients)
+        public ConcurrentRawHistoricalExample() : base(LookupClientFactory.CreateNew<decimal>(NumberOfConcurrentClients), NumberOfConcurrentClients)
         {
             _basePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, DownloadBasePath, DateTime.Now.ToString("yyyyMMddHHmmss"));
         }

@@ -4,16 +4,16 @@ using IQFeed.CSharpApiClient.Lookup.Historical.Messages;
 
 namespace IQFeed.CSharpApiClient.Lookup.Historical
 {
-    public class HistoricalMessageHandler : BaseLookupMessageHandler
+    public class HistoricalMessageHandler<T> : BaseLookupMessageHandler
     {
-        public MessageContainer<TickMessage> GetTickMessages(byte[] message, int count)
+        public MessageContainer<TickMessage<T>> GetTickMessages(byte[] message, int count)
         {
-            return ProcessMessages(TickMessage.Parse, ParseErrorMessage, message, count);
+            return ProcessMessages(TickMessage<T>.Parse, ParseErrorMessage, message, count);
         }
 
-        public MessageContainer<TickMessage> GetTickMessagesWithRequestId(byte[] message, int count)
+        public MessageContainer<TickMessage<T>> GetTickMessagesWithRequestId(byte[] message, int count)
         {
-            return ProcessMessages(TickMessage.ParseWithRequestId, ParseErrorMessageWithRequestId, message, count);
+            return ProcessMessages(TickMessage<T>.ParseWithRequestId, ParseErrorMessageWithRequestId, message, count);
         }
 
         public MessageContainer<IntervalMessage> GetIntervalMessages(byte[] message, int count)

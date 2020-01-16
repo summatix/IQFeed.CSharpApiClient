@@ -8,16 +8,16 @@ using IQFeed.CSharpApiClient.Lookup.Historical.Messages;
 
 namespace IQFeed.CSharpApiClient.Lookup.Historical
 {
-    public class HistoricalFacade : BaseLookupFacade, IHistoricalFacade<IEnumerable<TickMessage>, IEnumerable<IntervalMessage>, IEnumerable<DailyWeeklyMonthlyMessage>>
+    public class HistoricalFacade<T> : BaseLookupFacade, IHistoricalFacade<IEnumerable<TickMessage<T>>, IEnumerable<IntervalMessage>, IEnumerable<DailyWeeklyMonthlyMessage>>
     {
         private readonly HistoricalRequestFormatter _historicalRequestFormatter;
-        private readonly HistoricalMessageHandler _historicalMessageHandler;
+        private readonly HistoricalMessageHandler<T> _historicalMessageHandler;
 
         public HistoricalFacade(
             HistoricalRequestFormatter historicalRequestFormatter,
             LookupDispatcher lookupDispatcher,
             ExceptionFactory exceptionFactory,
-            HistoricalMessageHandler historicalMessageHandler,
+            HistoricalMessageHandler<T> historicalMessageHandler,
             HistoricalRawFacade historicalRawFacade,
             int timeoutMs) : base(lookupDispatcher, exceptionFactory, timeoutMs)
         {
@@ -36,7 +36,7 @@ namespace IQFeed.CSharpApiClient.Lookup.Historical
         /// <param name="dataDirection"></param>
         /// <param name="requestId"></param>
         /// <param name="datapointsPerSend"></param>
-        public Task<IEnumerable<TickMessage>> ReqHistoryTickDatapointsAsync(string symbol, int maxDatapoints, DataDirection? dataDirection = null, string requestId = null, int? datapointsPerSend = null)
+        public Task<IEnumerable<TickMessage<T>>> ReqHistoryTickDatapointsAsync(string symbol, int maxDatapoints, DataDirection? dataDirection = null, string requestId = null, int? datapointsPerSend = null)
         {
             var request = _historicalRequestFormatter.ReqHistoryTickDatapoints(symbol, maxDatapoints, dataDirection, requestId, datapointsPerSend);
             return string.IsNullOrEmpty(requestId) ? GetMessagesAsync(request, _historicalMessageHandler.GetTickMessages) : GetMessagesAsync(request, _historicalMessageHandler.GetTickMessagesWithRequestId);
@@ -54,7 +54,7 @@ namespace IQFeed.CSharpApiClient.Lookup.Historical
         /// <param name="requestId"></param>
         /// <param name="datapointsPerSend"></param>
         /// <returns></returns>
-        public Task<IEnumerable<TickMessage>> ReqHistoryTickDaysAsync(string symbol, int days, int? maxDatapoints = null, TimeSpan? beginFilterTime = null,
+        public Task<IEnumerable<TickMessage<T>>> ReqHistoryTickDaysAsync(string symbol, int days, int? maxDatapoints = null, TimeSpan? beginFilterTime = null,
             TimeSpan? endFilterTime = null, DataDirection? dataDirection = null, string requestId = null, int? datapointsPerSend = null)
         {
             var request = _historicalRequestFormatter.ReqHistoryTickDays(symbol, days, maxDatapoints, beginFilterTime, endFilterTime, dataDirection, requestId, datapointsPerSend);
@@ -73,7 +73,7 @@ namespace IQFeed.CSharpApiClient.Lookup.Historical
         /// <param name="dataDirection"></param>
         /// <param name="requestId"></param>
         /// <param name="datapointsPerSend"></param>
-        public Task<IEnumerable<TickMessage>> ReqHistoryTickTimeframeAsync(string symbol, DateTime? beginDate, DateTime? endDate, int? maxDatapoints = null, TimeSpan? beginFilterTime = null, TimeSpan? endFilterTime = null, DataDirection? dataDirection = null, string requestId = null, int? datapointsPerSend = null)
+        public Task<IEnumerable<TickMessage<T>>> ReqHistoryTickTimeframeAsync(string symbol, DateTime? beginDate, DateTime? endDate, int? maxDatapoints = null, TimeSpan? beginFilterTime = null, TimeSpan? endFilterTime = null, DataDirection? dataDirection = null, string requestId = null, int? datapointsPerSend = null)
         {
             if (!beginDate.HasValue && !endDate.HasValue)
                 throw new ArgumentException("Begin date or End date must have value.");

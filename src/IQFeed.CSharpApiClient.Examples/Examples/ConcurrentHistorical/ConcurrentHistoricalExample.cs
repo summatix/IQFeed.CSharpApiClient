@@ -19,7 +19,7 @@ namespace IQFeed.CSharpApiClient.Examples.Examples.ConcurrentHistorical
 
         private readonly ConcurrentDictionary<string, List<DailyWeeklyMonthlyMessage>> _dailyMessagesBySymbol;
 
-        public ConcurrentHistoricalExample() : base(LookupClientFactory.CreateNew(NumberOfConcurrentClients), NumberOfConcurrentClients)
+        public ConcurrentHistoricalExample() : base(LookupClientFactory.CreateNew<decimal>(NumberOfConcurrentClients), NumberOfConcurrentClients)
         {
             _dailyMessagesBySymbol = new ConcurrentDictionary<string, List<DailyWeeklyMonthlyMessage>>();
         }

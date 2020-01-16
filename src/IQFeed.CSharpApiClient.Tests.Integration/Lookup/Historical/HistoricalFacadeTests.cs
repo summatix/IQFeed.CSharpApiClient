@@ -14,7 +14,7 @@ namespace IQFeed.CSharpApiClient.Tests.Integration.Lookup.Historical
         private const string Symbol = "AAPL";
         private const string RequestId = "TEST";
 
-        private LookupClient _lookupClient;
+        private LookupClient<double> _lookupClient;
 
         public HistoricalFacadeTests()
         {
@@ -24,7 +24,7 @@ namespace IQFeed.CSharpApiClient.Tests.Integration.Lookup.Historical
         [SetUp]
         public void SetUp()
         {
-            _lookupClient = LookupClientFactory.CreateNew();
+            _lookupClient = LookupClientFactory.CreateNew<double>();
             _lookupClient.Connect();
         }
 

@@ -17,10 +17,10 @@ namespace IQFeed.CSharpApiClient.Tests.Lookup.Historical.Messages
             var message = "2018-04-17 17:51:22.123456,96.0700,1061909,0,0.0000,0.0000,4145784264,O,19,143A";
 
             // Act
-            var tickMessageParsed = TickMessage.Parse(message);
+            var tickMessageParsed = TickMessage<float>.Parse(message);
 
             var timestamp = DateTime.ParseExact("2018-04-17 17:51:22.123456", TickMessage.TickDateTimeFormat, CultureInfo.InvariantCulture);
-            var tickMessage = new TickMessage(timestamp, 96.07f, 1061909, 0, 0.0f, 0.0f, 4145784264, 'O', 19, "143A");
+            var tickMessage = new TickMessage<float>(timestamp, 96.07f, 1061909, 0, 0.0f, 0.0f, 4145784264, 'O', 19, "143A");
 
             // Assert
             Assert.AreEqual(tickMessageParsed, tickMessage);
