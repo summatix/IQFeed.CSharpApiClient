@@ -2,8 +2,12 @@
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading.Tasks;
 using IQFeed.CSharpApiClient.Extensions;
+
+[assembly: InternalsVisibleTo("IQFeed.CSharpApiClient.Tests")]
 
 namespace IQFeed.CSharpApiClient.Socket
 {
@@ -24,18 +28,10 @@ namespace IQFeed.CSharpApiClient.Socket
 
         public SocketClient(string hostname, int port, int bufferSize = 8192)
         {
-            // Get host related information.
-            IPHostEntry host = Dns.GetHostEntry(hostname);
-
-            // Addres of the host.
-            IPAddress[] addressList = ForceIPv4 ?
-                host.AddressList.Where(ip => ip.AddressFamily == AddressFamily.InterNetwork).ToArray() :
-                host.AddressList;
-
             _bufferSize = bufferSize;
 
             // Instantiates the endpoint and socket.
-            _hostEndPoint = new IPEndPoint(addressList[addressList.Length - 1], port);
+            _hostEndPoint = new IPEndPoint(GetHost(hostname), port);
             _clientSocket = new System.Net.Sockets.Socket(_hostEndPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
 
             _socketMessageHandler = new SocketMessageHandler(_bufferSize, '\n'); // TODO: could be injected in the constructor
@@ -43,19 +39,57 @@ namespace IQFeed.CSharpApiClient.Socket
             _readEventArgs = new SocketAsyncEventArgs();
         }
 
+        internal static IPAddress GetHost(string hostname)
+        {
+            // First check if we got given an IP address. If not, then do a DNS lookup.
+            if (!IPAddress.TryParse(hostname, out IPAddress host))
+            {
+                // Get host related information.
+                IPHostEntry hostEntry = Dns.GetHostEntry(hostname);
+
+                // Addres of the host.
+                IPAddress[] addressList = ForceIPv4 ?
+                    hostEntry.AddressList.Where(ip => ip.AddressFamily == AddressFamily.InterNetwork).ToArray() :
+                    hostEntry.AddressList;
+                host = addressList[addressList.Length - 1];
+            }
+
+            return host;
+        }
 
         public void Connect()
+        {
+            ConnectAsync().Wait();
+        }
+
+        public async Task ConnectAsync()
         {
             if (_disposed)
                 throw new ObjectDisposedException($"Can't connect because SocketClient is disposed.");
 
-            _clientSocket.Connect(_hostEndPoint);
+            var tcs = new TaskCompletionSource<bool>();
+            var args = new SocketAsyncEventArgs { RemoteEndPoint = _hostEndPoint };
+
+            void onCompleted(object sender, SocketAsyncEventArgs eventArgs)
+            {
+                tcs.SetResult(true);
+            }
+
+            args.Completed += onCompleted;
+            if (_clientSocket.ConnectAsync(args)) await tcs.Task;
+            args.Completed -= onCompleted;
+
+            if (!_clientSocket.Connected)
+            {
+                throw new SocketException((int)args.SocketError);
+            }
+
             Connected.RaiseEvent(this, EventArgs.Empty);
 
             _readEventArgs.Completed += new EventHandler<SocketAsyncEventArgs>(IO_Completed);
             _readEventArgs.SetBuffer(new byte[_bufferSize], 0, _bufferSize);
 
-            // As soon as the client is connected, post a receive to the connection 
+            // As soon as the client is connected, post a receive to the connection
             bool willRaiseEvent = _clientSocket.ReceiveAsync(_readEventArgs);
             if (!willRaiseEvent)
             {
@@ -63,16 +97,63 @@ namespace IQFeed.CSharpApiClient.Socket
             }
         }
 
-        public void Disconnect() { Dispose(); }
+        public void Disconnect()
+        {
+            DisconnectAsync().Wait();
+        }
+
+        public async Task DisconnectAsync()
+        {
+            if (_disposed)
+                return;
+
+            var tcs = new TaskCompletionSource<bool>();
+            var args = new SocketAsyncEventArgs { RemoteEndPoint = _hostEndPoint };
+
+            void onCompleted(object sender, SocketAsyncEventArgs eventArgs)
+            {
+                tcs.SetResult(true);
+            }
+
+            args.Completed += onCompleted;
+            if (_clientSocket.DisconnectAsync(args)) await tcs.Task;
+            args.Completed -= onCompleted;
+
+            Dispose();
+        }
 
         public void Send(string message)
+        {
+            SendAsync(message).Wait();
+        }
+
+        public async Task SendAsync(string message)
         {
             if (_disposed)
                 throw new ObjectDisposedException($"Can't send because SocketClient is disposed.");
 
             if (_clientSocket.Connected)
             {
-                _clientSocket.Send(Encoding.ASCII.GetBytes(message));
+
+                var tcs = new TaskCompletionSource<bool>();
+                var args = new SocketAsyncEventArgs();
+
+                void onCompleted(object sender, SocketAsyncEventArgs eventArgs)
+                {
+                    tcs.SetResult(true);
+                }
+
+                var buffer = Encoding.ASCII.GetBytes(message);
+                args.SetBuffer(buffer, 0, buffer.Length);
+
+                args.Completed += onCompleted;
+                if (_clientSocket.SendAsync(args)) await tcs.Task;
+                args.Completed -= onCompleted;
+
+                if (args.SocketError != SocketError.Success)
+                {
+                    throw new SocketException((int)args.SocketError);
+                }
             }
             else
             {

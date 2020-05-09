@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using IQFeed.CSharpApiClient.Socket;
 using IQFeed.CSharpApiClient.Streaming.Common.Messages;
 using IQFeed.CSharpApiClient.Streaming.Derivative.Handlers;
@@ -60,12 +61,22 @@ namespace IQFeed.CSharpApiClient.Streaming.Derivative
 
         public void Connect()
         {
-            _socketClient.Connect();
+            ConnectAsync().Wait();
+        }
+
+        public Task ConnectAsync()
+        {
+            return _socketClient.ConnectAsync();
         }
 
         public void Disconnect()
         {
-            _socketClient.Disconnect();
+            DisconnectAsync().Wait();
+        }
+
+        public Task DisconnectAsync()
+        {
+            return _socketClient.DisconnectAsync();
         }
 
         public void SetClientName(string name)
@@ -77,14 +88,37 @@ namespace IQFeed.CSharpApiClient.Streaming.Derivative
         public void ReqBarWatch(string symbol, int interval, DateTime? beginDate = null, int? maxDaysOfDatapoints = null, int? maxDatapoints = null,
             TimeSpan? beginFilterTime = null, TimeSpan? endFilterTime = null, string requestId = null, DerivativeIntervalType? intervalType = null, int? updateInterval = null)
         {
+            ReqBarWatchAsync(symbol, interval, beginDate, maxDaysOfDatapoints,
+                maxDatapoints, beginFilterTime, endFilterTime, requestId, intervalType,
+                updateInterval).Wait();
+        }
+
+        public Task ReqBarWatchAsync(string symbol, int interval, DateTime? beginDate = null, int? maxDaysOfDatapoints = null, int? maxDatapoints = null,
+            TimeSpan? beginFilterTime = null, TimeSpan? endFilterTime = null, string requestId = null, DerivativeIntervalType? intervalType = null, int? updateInterval = null)
+        {
             var request = _derivativeRequestFormatter.ReqBarWatch(symbol, interval, beginDate, maxDaysOfDatapoints, maxDatapoints, beginFilterTime, endFilterTime, requestId, intervalType, updateInterval);
-            _socketClient.Send(request);
+            return _socketClient.SendAsync(request);
+        }
+
+        public void ReqBarUnwatch(string symbol)
+        {
+            ReqBarUnwatchAsync(symbol).Wait();
         }
 
         public void ReqBarUnwatch(string symbol, string requestId)
         {
+            ReqBarUnwatchAsync(symbol, requestId);
+        }
+
+        public Task ReqBarUnwatchAsync(string symbol)
+        {
+            return ReqBarUnwatchAsync(symbol, "");
+        }
+
+        public Task ReqBarUnwatchAsync(string symbol, string requestId)
+        {
             var request = _derivativeRequestFormatter.ReqBarUnwatch(symbol, requestId);
-            _socketClient.Send(request);
+            return _socketClient.SendAsync(request);
         }
 
         public void ReqWatches() // TODO: should add async method also.
@@ -95,8 +129,13 @@ namespace IQFeed.CSharpApiClient.Streaming.Derivative
 
         public void UnwatchAll()
         {
+            UnwatchAllAsync().Wait();
+        }
+
+        public Task UnwatchAllAsync()
+        {
             var request = _derivativeRequestFormatter.UnwatchAll();
-            _socketClient.Send(request);
+            return _socketClient.SendAsync(request);
         }
     }
 }
